@@ -41,7 +41,6 @@ class TorchSAC(parl.Algorithm):
         self.alpha = alpha
         self.actor_lr = actor_lr
         self.critic_lr = critic_lr
-        # print("B"*50)
         self.model = model.to(device)
         # print("D"*50)
         self.target_model = deepcopy(self.model)

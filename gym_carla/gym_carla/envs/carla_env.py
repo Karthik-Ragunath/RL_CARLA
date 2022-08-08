@@ -104,6 +104,7 @@ class CarlaEnv(gym.Env):
         # print("carla_env.py reset function called")
         while True:
             try:
+                print("Came inside reset")
                 self.collision_sensor = None
                 self.lane_sensor = None
 
@@ -188,6 +189,7 @@ class CarlaEnv(gym.Env):
                         self.collision_hist.pop(0)
 
                 def get_camera_rgb_images(data):
+                    print("RGB Sensor Detection")
                     image_width = data.width
                     image_height = data.height
                     image_transform = data.transform
@@ -272,6 +274,7 @@ class CarlaEnv(gym.Env):
                 # print("carla_env.py reset func, obs:", self._get_obs())
                 # print("carla_env.py reset func, state_info:", self.state_info)
                 # print("-" * 25, "Current Image Returned:", self.current_image.frame, "-" * 25)
+                print("Current Image:", self.current_image)
                 return self._get_obs(), copy.deepcopy(self.state_info), self.current_image
 
             except Exception as e:
