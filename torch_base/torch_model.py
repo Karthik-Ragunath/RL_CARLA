@@ -70,12 +70,20 @@ class Actor(parl.Model):
         x_cnn_orig = F.relu(self.cnn_layer_1_4(x_cnn_orig))
         x_cnn_orig = F.relu(self.cnn_layer_1_5(x_cnn_orig))
 
+        x_cnn_orig = F.relu(self.fully_connected_layer_1_1(x_cnn_orig))
+        x_cnn_orig = F.relu(self.fully_connected_layer_1_2(x_cnn_orig))
+        x_cnn_orig = F.relu(self.fully_connected_layer_1_3(x_cnn_orig))
+
         # Bounding Box Image - CNN
         x_faster_rcnn = F.relu(self.cnn_layer_2_1(bounding_box_image))
         x_faster_rcnn = F.relu(self.cnn_layer_2_2(x_faster_rcnn))
         x_faster_rcnn = F.relu(self.cnn_layer_2_3(x_faster_rcnn))
         x_faster_rcnn = F.relu(self.cnn_layer_2_4(x_faster_rcnn))
         x_faster_rcnn = F.relu(self.cnn_layer_2_5(x_faster_rcnn))
+
+        x_faster_rcnn = F.relu(self.fully_connected_layer_2_1(x_faster_rcnn))
+        x_faster_rcnn = F.relu(self.fully_connected_layer_2_2(x_faster_rcnn))
+        x_faster_rcnn = F.relu(self.fully_connected_layer_2_3(x_faster_rcnn))
 
         fusion = torch.concat((x_cnn_orig, x_faster_rcnn), 0)
         fusion = F.relu(self.fusion_fully_connected_layer_1(fusion))
