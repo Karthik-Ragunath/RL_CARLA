@@ -73,6 +73,9 @@ def main():
 
     # env for eval
     eval_env_params = EnvConfig['eval_env_params']
+
+    print("Eval Env Params:", eval_env_params)
+
     eval_env = LocalEnv(args.env, eval_env_params)
 
     obs_dim = eval_env.obs_dim

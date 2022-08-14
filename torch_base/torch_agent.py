@@ -15,10 +15,16 @@ class TorchAgent(parl.Agent):
         self.device = "cpu"
         # print("F")
         self.alg.sync_target(decay=0)
+    #
+    # def predict(self, obs):
+    #     obs = torch.FloatTensor(obs.reshape(1, -1)).to(self.device)
+    #     action = self.alg.predict(obs)
+    #     action_numpy = action.cpu().detach().numpy().flatten()
+    #     return action_numpy
 
-    def predict(self, obs):
-        obs = torch.FloatTensor(obs.reshape(1, -1)).to(self.device)
-        action = self.alg.predict(obs)
+    def predict(self, original_image, bounding_box_image):
+        # obs = torch.FloatTensor(obs.reshape(1, -1)).to(self.device)
+        action = self.alg.predict(original_image, bounding_box_image)
         action_numpy = action.cpu().detach().numpy().flatten()
         return action_numpy
 

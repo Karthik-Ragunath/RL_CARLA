@@ -52,8 +52,16 @@ class TorchSAC(parl.Algorithm):
             self.model.critic_model.parameters(), lr=critic_lr)
         # print("C" * 50)
 
-    def predict(self, obs):
-        act_mean, _ = self.model.policy(obs)
+    # def predict(self, obs):
+    #     act_mean, _ = self.model.policy(obs)
+    #     # print("Predicted Mean Action:", act_mean)
+    #     action = torch.tanh(act_mean)
+    #     return action
+
+
+
+    def predict(self, original_image, bounding_box_image):
+        act_mean, _ = self.model.policy(original_image, bounding_box_image)
         # print("Predicted Mean Action:", act_mean)
         action = torch.tanh(act_mean)
         return action
