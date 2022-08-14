@@ -71,9 +71,7 @@ class ParallelEnv(object):
 
 class LocalEnv(object):
     def __init__(self, env_name, params):
-        # print("Local Env Called")
         self.env = gym.make(env_name, params=params)
-        # print("4"*50, "env_utils.py")
         self.env = ActionMappingWrapper(self.env)
         # print("Low Bound:", self.env.low_bound)
         # print("High Bound:", self.env.high_bound)
@@ -110,7 +108,7 @@ class LocalEnv(object):
         #     print("$" * 25, "RESET Image Name:", str(current_image.frame), "$" * 25)
         #     faster_rcnn_obj = DetectBoundingBox(numpy_rgb_image, str(current_image.frame) + '.png')
         #     faster_rcnn_obj.detect_bounding_boxes()
-        return obs
+        return obs, current_image
 
     def step(self, action):
         action_out, current_image = self.env.step(action)
@@ -121,7 +119,7 @@ class LocalEnv(object):
             # print("$" * 25, "STEP Image Name:", str(current_image.frame), "$" * 25)
             # faster_rcnn_obj = DetectBoundingBox(numpy_rgb_image, str(current_image.frame) + '.png')
             # faster_rcnn_obj.detect_bounding_boxes()
-        return action_out
+        return action_out, current_image
 
 @parl.remote_class(wait=False)
 class CarlaRemoteEnv(object):
