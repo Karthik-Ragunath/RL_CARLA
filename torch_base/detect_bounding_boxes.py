@@ -123,4 +123,5 @@ class DetectBoundingBox:
             # cv2.imwrite(f"../test_predictions/{image_name}.jpg", orig_image,)
             plt.imshow(orig_image)
             plt.savefig("bounding_box_outputs/" + self.image_name + ".png")
-        print("Image {image_num} done...".format(image_num=(i + 1)))
+        print("Image {image_name} done...".format(image_num=self.image_name))
+        return orig_image

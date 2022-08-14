@@ -5,6 +5,8 @@ from env_utils import ParallelEnv, LocalEnv
 from torch_base import TorchModel, TorchSAC, TorchAgent  # Choose base wrt which deep-learning framework you are using
 #from paddle_base import PaddleModel, PaddleSAC, PaddleAgent
 from env_config import EnvConfig
+from torch_base import DetectBoundingBox
+import matplotlib.pyplot as plt
 
 WARMUP_STEPS = 2e3
 EVAL_EPISODES = 3
@@ -16,18 +18,45 @@ ALPHA = 0.2  # determines the relative importance of entropy term against the re
 ACTOR_LR = 3e-4
 CRITIC_LR = 3e-4
 
+def to_bgra_array(image):
+    """Convert a CARLA raw image to a BGRA numpy array."""
+    array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
+    array = np.reshape(array, (image.height, image.width, 4))
+    return array
+
+def to_rgb_array(image):
+    """Convert a CARLA raw image to a RGB numpy array."""
+    array = to_bgra_array(image)
+    # Convert BGRA to RGB.
+    array = array[:, :, :3]
+    array = array[:, :, ::-1]
+    return array
 
 # Runs policy for 3 episodes by default and returns average reward
 def run_evaluate_episodes(agent, env, eval_episodes):
     avg_reward = 0.
     for k in range(eval_episodes):
-        obs = env.reset()
+        train_image = env.reset()
+        if train_image:
+            print("*" * 25, "RUN EPISODE - RESET", "*" * 25)
+            numpy_rgb_image = to_rgb_array(train_image)
+            plt.imshow(numpy_rgb_image)
+            plt.savefig("carla_rgb_sensor_flow_detected/" + str(train_image.frame) + '.png')
+            detect_bounding_box_obj = DetectBoundingBox(numpy_rgb_image.copy(), str(train_image.frame))
+            bounding_box_image = detect_bounding_box_obj.detect_bounding_boxes()
         done = False
         steps = 0
         while not done and steps < env._max_episode_steps:
             steps += 1
-            action = agent.predict(obs)
-            obs, reward, done, _ = env.step(action)
+            action = agent.predict(numpy_rgb_image, bounding_box_image)
+            step_tuple, train_image = env.step(action)
+            if train_image:
+                numpy_rgb_image = to_rgb_array(train_image)
+                plt.imshow(numpy_rgb_image)
+                plt.savefig("carla_rgb_sensor_flow_detected/" + str(train_image.frame) + '.png')
+                detect_bounding_box_obj = DetectBoundingBox(numpy_rgb_image.copy(), str(train_image.frame))
+                bounding_box_image = detect_bounding_box_obj.detect_bounding_boxes()
+            reward, done, _ = step_tuple
             avg_reward += reward
     avg_reward /= eval_episodes
     return avg_reward
