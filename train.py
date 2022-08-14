@@ -36,7 +36,7 @@ def to_rgb_array(image):
 def run_evaluate_episodes(agent, env, eval_episodes):
     avg_reward = 0.
     for k in range(eval_episodes):
-        train_image = env.reset()
+        obs, train_image = env.reset()
         if train_image:
             print("*" * 25, "RUN EPISODE - RESET", "*" * 25)
             numpy_rgb_image = to_rgb_array(train_image)
@@ -56,7 +56,7 @@ def run_evaluate_episodes(agent, env, eval_episodes):
                 plt.savefig("carla_rgb_sensor_flow_detected/" + str(train_image.frame) + '.png')
                 detect_bounding_box_obj = DetectBoundingBox(numpy_rgb_image.copy(), str(train_image.frame))
                 bounding_box_image = detect_bounding_box_obj.detect_bounding_boxes()
-            reward, done, _ = step_tuple
+            obs, reward, done, _ = step_tuple
             avg_reward += reward
     avg_reward /= eval_episodes
     return avg_reward
