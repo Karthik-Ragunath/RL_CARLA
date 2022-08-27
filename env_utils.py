@@ -1,5 +1,4 @@
 import copy
-
 import parl
 import carla
 import gym
@@ -9,24 +8,30 @@ from parl.utils import logger, tensorboard
 from parl.env.continuous_wrappers import ActionMappingWrapper
 import matplotlib.pyplot as plt
 from PIL import Image
+import sys
+import os
+sys.path.append('/media/karthikragunath/Personal-Data/carla_6/RL_CARLA/')
 from torch_base import DetectBoundingBox
-
 
 class ParallelEnv(object):
     def __init__(self, env_name, xparl_addr, train_envs_params):
+        print("trying to connect to remote env")
         parl.connect(xparl_addr)
         self.env_list = [
             CarlaRemoteEnv(env_name=env_name, params=params)
             for params in train_envs_params
         ]
+        print("Env List:", self.env_list)
         self.env_num = len(self.env_list)
         self.episode_reward_list = [0] * self.env_num
         self.episode_steps_list = [0] * self.env_num
         self._max_episode_steps = train_envs_params[0]['max_time_episode']
         self.total_steps = 0
+        print("Init Successfully executed")
 
     def reset(self):
         # print("env_utils.py:", "reset function")
+        print("Obs List:", self.env_list)
         obs_list = [env.reset() for env in self.env_list]
         # print("Resetting Envs:", obs_list)
         obs_list = [obs.get() for obs in obs_list]
@@ -71,7 +76,9 @@ class ParallelEnv(object):
 
 class LocalEnv(object):
     def __init__(self, env_name, params):
+        print("-"*30, "Inside Local Env", "-"*30)
         self.env = gym.make(env_name, params=params)
+        print("*" * 40, "Environment Created", "*" * 40)
         self.env = ActionMappingWrapper(self.env)
         # print("Low Bound:", self.env.low_bound)
         # print("High Bound:", self.env.high_bound)
@@ -124,6 +131,7 @@ class LocalEnv(object):
 @parl.remote_class(wait=False)
 class CarlaRemoteEnv(object):
     def __init__(self, env_name, params):
+        print("Came Inside Remote Init")
         class ActionSpace(object):
             def __init__(self,
                          action_space=None,
@@ -139,8 +147,9 @@ class CarlaRemoteEnv(object):
 
             def sample(self):
                 return self.action_space.sample()
-
+        print("Trying To Create Remote GYM Env")
         self.env = gym.make(env_name, params=params)
+        print("Remote Env Made")
         self.env = ActionMappingWrapper(self.env)
         self._max_episode_steps = int(params['max_time_episode'])
         self.action_space = ActionSpace(

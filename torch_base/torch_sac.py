@@ -58,8 +58,6 @@ class TorchSAC(parl.Algorithm):
     #     action = torch.tanh(act_mean)
     #     return action
 
-
-
     def predict(self, original_image, bounding_box_image):
         act_mean, _ = self.model.policy(original_image, bounding_box_image)
         # print("Predicted Mean Action:", act_mean)

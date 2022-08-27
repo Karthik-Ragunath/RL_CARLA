@@ -4,6 +4,7 @@ import torch
 import glob as glob
 import sys
 sys.path.append('/media/karthikragunath/Personal-Data/carla_6/RL_CARLA/torch_base')
+sys.path.append('/media/karthikragunath/Personal-Data/carla_6/RL_CARLA')
 from faster_rcnn_model import create_model
 import matplotlib.pyplot as plt
 

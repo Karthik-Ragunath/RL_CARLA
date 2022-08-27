@@ -48,7 +48,7 @@ class CarlaEnv(gym.Env):
         self.action_space = spaces.Box(
             np.array([-2.0, -2.0]), np.array([2.0, 2.0]), dtype=np.float32)
         self.state_space = spaces.Box(
-            low=-50.0, high=50.0, shape=(12, ), dtype=np.float32)
+            low=-50.0, high=50.0, shape=(512,), dtype=np.float32)
 
         # Connect to carla server and get world object
         # print('connecting to Carla server...')
@@ -99,6 +99,7 @@ class CarlaEnv(gym.Env):
 
         # store current image
         self.current_image = None
+        print("Carla Init Executed")
 
     def reset(self):
         # print("carla_env.py reset function called")

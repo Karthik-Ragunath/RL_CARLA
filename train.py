@@ -5,8 +5,8 @@ from env_utils import ParallelEnv, LocalEnv
 from torch_base import TorchModel, TorchSAC, TorchAgent  # Choose base wrt which deep-learning framework you are using
 #from paddle_base import PaddleModel, PaddleSAC, PaddleAgent
 from env_config import EnvConfig
-from torch_base import DetectBoundingBox
 import matplotlib.pyplot as plt
+from torch_base import DetectBoundingBox
 
 WARMUP_STEPS = 2e3
 EVAL_EPISODES = 3
@@ -81,12 +81,16 @@ def main():
     obs_dim = eval_env.obs_dim
     action_dim = eval_env.action_dim
 
+    print("Obs Dim:", obs_dim, "Action Dim:", action_dim)
+
+
     # Initialize model, algorithm, agent, replay_memory
     if args.framework == 'torch':
         CarlaModel, SAC, CarlaAgent = TorchModel, TorchSAC, TorchAgent
     elif args.framework == 'paddle':
         CarlaModel, SAC, CarlaAgent = PaddleModel, PaddleSAC, PaddleAgent
     model = CarlaModel(obs_dim, action_dim)
+    print("Model Created")
     algorithm = SAC(
         model,
         gamma=GAMMA,
@@ -94,6 +98,7 @@ def main():
         alpha=ALPHA,
         actor_lr=ACTOR_LR,
         critic_lr=CRITIC_LR)
+    print("Algorithm Initialized")
     agent = CarlaAgent(algorithm)
     rpm = ReplayMemory(
         max_size=MEMORY_SIZE, obs_dim=obs_dim, act_dim=action_dim)
@@ -103,7 +108,7 @@ def main():
     test_flag = 0
 
     obs_list = env_list.reset()
-
+    '''
     while total_steps < args.train_total_steps:
         # Train episode
         if rpm.size() < WARMUP_STEPS:
@@ -149,8 +154,7 @@ def main():
             logger.info(
                 'Total steps {}, Evaluation over {} episodes, Average reward: {}'
                 .format(total_steps, EVAL_EPISODES, avg_reward))
-
-
+    '''
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
