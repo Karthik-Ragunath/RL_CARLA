@@ -29,12 +29,12 @@ detection_threshold = 0.8
 
 __all__ = ['DetectBoundingBox']
 directory_path = "/media/karthikragunath/Personal-Data/carla_6/RL_CARLA/carla_rgb_sensor_flow_detected"
+bounding_box_directory_path = "/media/karthikragunath/Personal-Data/carla_6/RL_CARLA/bounding_box_outputs"
 
 class DetectBoundingBox:
     def __init__(self, image, image_name):
         self.image = image
         self.image_name = image_name
-        print("%"*50, "Image Name:", self.image_name, "%"*50)
 
     def detect_bounding_boxes(self):
         '''
@@ -80,7 +80,10 @@ class DetectBoundingBox:
         '''
 
         print("Image Name (Self):", self.image_name)
-        image = cv2.imread(directory_path + "/" + self.image_name + ".png")
+        # image = cv2.imread(directory_path + "/" + self.image_name)
+        image = self.image
+        if not image.any():
+            print(directory_path, self.image_name, "EMPTY IMAGE OBJ")
         orig_image = image.copy()
         # BGR to RGB
         image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB).astype(np.float32)
@@ -123,6 +126,7 @@ class DetectBoundingBox:
             # cv2.waitKey(1)
             # cv2.imwrite(f"../test_predictions/{image_name}.jpg", orig_image,)
             plt.imshow(orig_image)
-            plt.savefig("bounding_box_outputs/" + self.image_name + ".png")
-        print("Image {image_name} done...".format(image_num=self.image_name))
+            plt.savefig(bounding_box_directory_path + "/" + self.image_name)
+            print("Bounding Box Path:", bounding_box_directory_path, self.image_name)
+        print("Image {image_name} done...".format(image_name=self.image_name))
         return orig_image

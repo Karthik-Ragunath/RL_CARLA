@@ -8,6 +8,7 @@ from parl.utils import logger, tensorboard
 from parl.env.continuous_wrappers import ActionMappingWrapper
 import matplotlib.pyplot as plt
 from PIL import Image
+import time
 import sys
 import os
 sys.path.append('/media/karthikragunath/Personal-Data/carla_6/RL_CARLA/')
@@ -31,12 +32,29 @@ class ParallelEnv(object):
 
     def reset(self):
         # print("env_utils.py:", "reset function")
-        print("Obs List:", self.env_list)
-        obs_list = [env.reset() for env in self.env_list]
-        # print("Resetting Envs:", obs_list)
-        obs_list = [obs.get() for obs in obs_list]
-        # print("getting observations:", obs_list)
+        print("Env List:", self.env_list)
+        obs_list = []
+        for env in self.env_list:
+            print("Reset Function Is About To Be Called")
+            while True:
+                obs = env.reset()
+                print("ENV RESETTED")
+                get_obs = obs.get()
+                print("Observation:", get_obs)
+                if get_obs[1] == None:
+                    print("Okay Okay Okay !!!")
+                    continue
+                else:
+                    print("Okay!!! Now we are talking")
+                    break
+            obs_list.append(get_obs)
+            print("Obs List:", obs_list)
+        # obs_list = [env.reset() for env in self.env_list]
+        # # print("Resetting Envs:", obs_list)
+        # obs_list = [obs.get() for obs in obs_list]
+        print("getting observations:", obs_list)
         self.obs_list = np.array(obs_list)
+        print("After Numpy Converted:", self.obs_list)
         return self.obs_list
 
     def step(self, action_list):
@@ -44,6 +62,7 @@ class ParallelEnv(object):
             self.env_list[i].step(action_list[i]) for i in range(self.env_num)
         ]
         return_list = [return_.get() for return_ in return_list]
+        print("Return List:", return_list)
         return_list = np.array(return_list, dtype=object)
         self.next_obs_list = return_list[:, 0]
         self.reward_list = return_list[:, 1]
@@ -156,9 +175,53 @@ class CarlaRemoteEnv(object):
             self.env.action_space, self.env.action_space.low,
             self.env.action_space.high, self.env.action_space.shape)
 
+    def to_bgra_array(self, image):
+        """Convert a CARLA raw image to a BGRA numpy array."""
+        array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
+        array = np.reshape(array, (image.height, image.width, 4))
+        return array
+
+    def to_rgb_array(self, image):
+        """Convert a CARLA raw image to a RGB numpy array."""
+        array = self.to_bgra_array(image)
+        # Convert BGRA to RGB.
+        array = array[:, :, :3]
+        array = array[:, :, ::-1]
+        return array
+
     def reset(self):
-        obs, _ = self.env.reset()
-        return obs
+        print("Parallel ENV reset called")
+        obs, _, current_image = self.env.reset()
+        print("RESETTING DONE")
+        bounded_image = None
+        numpy_rgb_image = None
+        if current_image:
+            numpy_rgb_image = self.to_rgb_array(current_image)
+            plt.imshow(numpy_rgb_image)
+            plt.savefig("/media/karthikragunath/Personal-Data/carla_6/RL_CARLA/carla_rgb_sensor_flow_detected/" + str(current_image.frame) + '.png')
+            print("$" * 25, "RESET Image Name:", str(current_image.frame), "$" * 25)
+            faster_rcnn_obj = DetectBoundingBox(numpy_rgb_image, str(current_image.frame) + '.png')
+            bounded_image = faster_rcnn_obj.detect_bounding_boxes()
+            plt.imshow(bounded_image)
+            plt.savefig("/media/karthikragunath/Personal-Data/carla_6/RL_CARLA/carla_rgb_sensor_detected/" + str(current_image.frame) + '.png')
+            print("Image Received In ParallelEnv Reset")
+        else:
+            print("NO IMAGE DETECTED FOR NOW IN RESET")
+        return obs, numpy_rgb_image, bounded_image
+        # obs, _ = self.env.reset()
+        # return obs
 
     def step(self, action):
-        return self.env.step(action)
+        action_out, current_image = self.env.step(action)
+        if current_image:
+            # numpy_rgb_image = self.to_rgb_array(current_image)
+            # plt.imshow(numpy_rgb_image)
+            # plt.savefig("carla_rgb_sensor_detected/" + str(current_image.frame) + '.png')
+            # # print("$" * 25, "STEP Image Name:", str(current_image.frame), "$" * 25)
+            # # faster_rcnn_obj = DetectBoundingBox(numpy_rgb_image, str(current_image.frame) + '.png')
+            # # faster_rcnn_obj.detect_bounding_boxes()
+            print("Image Received In ParallelEnv Step")
+        else:
+            print("NO IMAGE DETECTED FOR NOW IN STEP")
+        # return self.env.step(action)
+        return action_out, current_image

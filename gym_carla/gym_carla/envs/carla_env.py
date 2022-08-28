@@ -21,7 +21,7 @@ import cv2
 from .coordinates import train_coordinates
 from .misc import _vec_decompose, delta_angle_between
 from .carla_logger import *
-
+import time
 
 class CarlaEnv(gym.Env):
     """An OpenAI gym wrapper for CARLA simulator."""
@@ -197,9 +197,10 @@ class CarlaEnv(gym.Env):
                     field_of_view = data.fov
                     raw_data = data.raw_data
                     frame_id = data.frame
-                    data.save_to_disk('image_outputs/%.6d.jpg' % data.frame)
+                    data.save_to_disk('/media/karthikragunath/Personal-Data/carla_6/RL_CARLA/image_outputs/%.6d.jpg' % data.frame)
                     self.current_image = data
 
+                time.sleep(3)
                 self.collision_hist = []
 
                 # Update timesteps
