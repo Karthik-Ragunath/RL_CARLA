@@ -15,8 +15,8 @@ class TorchModel(parl.Model):
         self.actor_model = Actor(obs_dim, action_dim)
         self.critic_model = Critic(obs_dim, action_dim)
 
-    def policy(self, obs):
-        return self.actor_model(obs)
+    def policy(self, orig_image_obs, bounding_box_image_obs):
+        return self.actor_model(orig_image_obs, bounding_box_image_obs)
 
     def value(self, obs, action):
         return self.critic_model(obs, action)
@@ -32,7 +32,8 @@ class Actor(parl.Model):
         self.cnn_layer_1_3 = nn.Conv2d(36, 48, (5, 5), stride=4)
         self.cnn_layer_1_4 = nn.Conv2d(48, 64, (3, 3), stride=1)
         self.cnn_layer_1_5 = nn.Conv2d(64, 64, (3, 3), stride=1)
-        self.fully_connected_layer_1_1 = nn.Linear(64, 128)
+
+        self.fully_connected_layer_1_1 = nn.Linear(768, 512)
         self.fully_connected_layer_1_2 = nn.Linear(128, 256)
         self.fully_connected_layer_1_3 = nn.Linear(256, obs_dim)
 
@@ -85,7 +86,9 @@ class Actor(parl.Model):
         x_faster_rcnn = F.relu(self.fully_connected_layer_2_2(x_faster_rcnn))
         x_faster_rcnn = F.relu(self.fully_connected_layer_2_3(x_faster_rcnn))
 
+        print("FORWARD:", "orig_shape -", x_cnn_orig.size(), "faster_rcnn_shape -", x_faster_rcnn.size())
         fusion = torch.concat((x_cnn_orig, x_faster_rcnn), 0)
+        print("FUSION SHAPE:", fusion.size())
         fusion = F.relu(self.fusion_fully_connected_layer_1(fusion))
         fusion = F.relu(self.fusion_fully_connected_layer_2(fusion))
 

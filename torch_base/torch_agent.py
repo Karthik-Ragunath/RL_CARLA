@@ -29,8 +29,17 @@ class TorchAgent(parl.Agent):
         return action_numpy
 
     def sample(self, obs):
-        obs = torch.FloatTensor(obs.reshape(1, -1)).to(self.device)
-        action, _ = self.alg.sample(obs)
+        print("Train Observation:", obs)
+        normal_image_obs, bounding_box_image_obs = obs
+        # normal_image_obs = torch.FloatTensor(normal_image_obs.reshape(1, -1)).to(self.device)
+        # bounding_box_image_obs = torch.FloatTensor(bounding_box_image_obs.reshape(1, -1)).to(self.device)
+        # obs = torch.FloatTensor(obs.reshape(1, -1)).to(self.device)
+        # action, _ = self.alg.sample(obs)
+        normal_image_obs = torch.unsqueeze(torch.from_numpy(normal_image_obs).float(), dim=0).permute(0, 3, 1, 2)
+        bounding_box_image_obs = torch.unsqueeze(torch.from_numpy(bounding_box_image_obs).float(), dim=0).permute(0, 3, 1, 2)
+        print("Normal Image Dim:", bounding_box_image_obs.size())
+        print("Bounding Box Image Dim:", bounding_box_image_obs.size())
+        action, _ = self.alg.sample(normal_image_obs, bounding_box_image_obs)
         action_numpy = action.cpu().detach().numpy().flatten()
         return action_numpy
 

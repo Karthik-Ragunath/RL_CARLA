@@ -40,21 +40,22 @@ class ParallelEnv(object):
                 obs = env.reset()
                 print("ENV RESETTED")
                 get_obs = obs.get()
-                print("Observation:", get_obs)
-                if get_obs[1] == None:
+                # print("Observation:", get_obs)
+                if not get_obs[1].any():
                     print("Okay Okay Okay !!!")
                     continue
                 else:
                     print("Okay!!! Now we are talking")
+                    print("LETS TALK SHAPES -", "Orig Image Shape:", get_obs[1].shape, "Bounded Image Shape:", get_obs[2].shape)
                     break
-            obs_list.append(get_obs)
-            print("Obs List:", obs_list)
+            obs_list.append((get_obs[1], get_obs[2]))
+            # print("Obs List:", obs_list)
         # obs_list = [env.reset() for env in self.env_list]
         # # print("Resetting Envs:", obs_list)
         # obs_list = [obs.get() for obs in obs_list]
-        print("getting observations:", obs_list)
+        # print("getting observations:", obs_list)
         self.obs_list = np.array(obs_list)
-        print("After Numpy Converted:", self.obs_list)
+        # print("After Numpy Converted:", self.obs_list)
         return self.obs_list
 
     def step(self, action_list):
