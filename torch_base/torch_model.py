@@ -130,8 +130,11 @@ class Critic(parl.Model):
         self.cnn_layer_1_3 = nn.Conv2d(36, 48, (5, 5), stride=4)
         self.cnn_layer_1_4 = nn.Conv2d(48, 64, (3, 3), stride=1)
         self.cnn_layer_1_5 = nn.Conv2d(64, 64, (3, 3), stride=1)
-        self.fully_connected_layer_1_1 = nn.Linear(64, 128)
-        self.fully_connected_layer_1_2 = nn.Linear(128, 256)
+
+        self.max_pool_layer_1 = nn.MaxPool2d((6, 10), stride=(3, 5))
+
+        self.fully_connected_layer_1_1 = nn.Linear(768, 512)
+        self.fully_connected_layer_1_2 = nn.Linear(512, 256)
         self.fully_connected_layer_1_3 = nn.Linear(256, obs_dim)
 
         # Image With Bounding Box
@@ -140,8 +143,11 @@ class Critic(parl.Model):
         self.cnn_layer_2_3 = nn.Conv2d(36, 48, (5, 5), stride=4)
         self.cnn_layer_2_4 = nn.Conv2d(48, 64, (3, 3), stride=1)
         self.cnn_layer_2_5 = nn.Conv2d(64, 64, (3, 3), stride=1)
-        self.fully_connected_layer_2_1 = nn.Linear(64, 128)
-        self.fully_connected_layer_2_2 = nn.Linear(128, 256)
+
+        self.max_pool_layer_2 = nn.MaxPool2d((6, 10), stride=(3, 5))
+
+        self.fully_connected_layer_2_1 = nn.Linear(768, 512)
+        self.fully_connected_layer_2_2 = nn.Linear(512, 256)
         self.fully_connected_layer_2_3 = nn.Linear(256, obs_dim)
 
         self.fusion_fully_connected_layer_1 = nn.Linear(obs_dim * 2, 768)
@@ -169,6 +175,10 @@ class Critic(parl.Model):
         x_cnn_orig = F.relu(self.cnn_layer_1_4(x_cnn_orig))
         x_cnn_orig = F.relu(self.cnn_layer_1_5(x_cnn_orig))
 
+        x_cnn_orig = self.max_pool_layer_1(x_cnn_orig)
+        x_cnn_orig = torch.unsqueeze(torch.flatten(x_cnn_orig), dim=0)
+        x_cnn_orig = F.relu(self.fully_connected_layer_1_1(x_cnn_orig))
+
         # Bounding Box Image - CNN
         x_faster_rcnn = F.relu(self.cnn_layer_2_1(bounding_box_image))
         x_faster_rcnn = F.relu(self.cnn_layer_2_2(x_faster_rcnn))
@@ -176,7 +186,11 @@ class Critic(parl.Model):
         x_faster_rcnn = F.relu(self.cnn_layer_2_4(x_faster_rcnn))
         x_faster_rcnn = F.relu(self.cnn_layer_2_5(x_faster_rcnn))
 
-        fusion = torch.concat((x_cnn_orig, x_faster_rcnn), 0)
+        x_faster_rcnn = self.max_pool_layer_2(x_faster_rcnn)
+        x_faster_rcnn = torch.unsqueeze(torch.flatten(x_faster_rcnn), dim=0)
+        x_faster_rcnn = F.relu(self.fully_connected_layer_2_1(x_faster_rcnn))
+
+        fusion = torch.cat((x_cnn_orig, x_faster_rcnn), 1)
         fusion = F.relu(self.fusion_fully_connected_layer_1(fusion))
         fusion = F.relu(self.fusion_fully_connected_layer_2(fusion))
 

@@ -128,10 +128,10 @@ def main():
             print("Action List Returned In Train:", action_list)
             break
 
-        '''
+
         next_obs_list, reward_list, done_list, info_list = env_list.step(
             action_list)
-
+        '''
         # Store data in replay memory
         for i in range(env_num):
             rpm.append(obs_list[i], action_list[i], reward_list[i],
