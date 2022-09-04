@@ -144,21 +144,21 @@ def main():
 
         #logger.info('----------- Step 1 ------------')
         # Train agent after collecting sufficient data
-        if rpm.size() >= WARMUP_STEPS:
+        # if rpm.size() >= WARMUP_STEPS:
+        if 5 > 2:
             batch_obs, batch_action, batch_reward, batch_next_obs, batch_terminal = rpm.sample_batch(
                 BATCH_SIZE)
             agent.learn(batch_obs, batch_action, batch_reward, batch_next_obs,
                         batch_terminal)
         break
 
+        '''
         #logger.info('----------- Step 2 ------------')
         # Save agent
         if total_steps > int(1e5) and total_steps > last_save_steps + int(1e4):
             agent.save('./{model_framework}_model_{train_context}/step_{current_steps}_model.ckpt'.format(
                 model_framework=args.framework, current_steps=total_steps, train_context=EnvConfig['train_context']))
             last_save_steps = total_steps
-        break
-        '''
         #logger.info('----------- Step 3 ------------')
         # Evaluate episode
         if (total_steps + 1) // args.test_every_steps >= test_flag:
