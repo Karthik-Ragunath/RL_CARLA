@@ -96,6 +96,7 @@ class ParallelEnv(object):
         self.reward_list = np.array(self.reward_list, dtype=object)
         self.done_list = np.array(self.done_list, dtype=object)
         self.info_list = np.array(self.info_list, dtype=object)
+        self.next_obs_rgb_list = np.array(self.next_obs_rgb_list, dtype=object)
         return self.next_waypoint_obs_list, self.reward_list, self.done_list, self.info_list, self.next_obs_rgb_list
 
     def get_obs(self):

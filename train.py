@@ -10,8 +10,9 @@ from torch_base import DetectBoundingBox
 
 WARMUP_STEPS = 2e3
 EVAL_EPISODES = 3
-MEMORY_SIZE = int(1e4)
+# MEMORY_SIZE = int(1e4)
 BATCH_SIZE = 256
+MEMORY_SIZE = 10
 GAMMA = 0.99
 TAU = 0.005
 ALPHA = 0.2  # determines the relative importance of entropy term against the reward
@@ -131,16 +132,16 @@ def main():
         next_obs_list, reward_list, done_list, info_list, next_obs_rgb_list = env_list.step(
             action_list)
 
-        # # Store data in replay memory
-        # for i in range(env_num):
-        #     rpm.append(obs_list[i], action_list[i], reward_list[i],
-        #                next_obs_list[i], done_list[i])
+        # Store data in replay memory
+        for i in range(env_num):
+            rpm.append(obs_list[i], action_list[i], reward_list[i],
+                       next_obs_rgb_list[i], done_list[i])
 
         obs_list = env_list.get_obs()
         total_steps = env_list.total_steps
         print("NEW OBS LIST:", obs_list)
-        break
-        '''
+        # break
+
         #logger.info('----------- Step 1 ------------')
         # Train agent after collecting sufficient data
         if rpm.size() >= WARMUP_STEPS:
@@ -148,14 +149,16 @@ def main():
                 BATCH_SIZE)
             agent.learn(batch_obs, batch_action, batch_reward, batch_next_obs,
                         batch_terminal)
- 
+        break
+
         #logger.info('----------- Step 2 ------------')
         # Save agent
         if total_steps > int(1e5) and total_steps > last_save_steps + int(1e4):
             agent.save('./{model_framework}_model_{train_context}/step_{current_steps}_model.ckpt'.format(
                 model_framework=args.framework, current_steps=total_steps, train_context=EnvConfig['train_context']))
             last_save_steps = total_steps
-        
+        break
+        '''
         #logger.info('----------- Step 3 ------------')
         # Evaluate episode
         if (total_steps + 1) // args.test_every_steps >= test_flag:
