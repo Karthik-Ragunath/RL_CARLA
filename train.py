@@ -108,7 +108,7 @@ def main():
     test_flag = 0
 
     obs_list = env_list.reset()
-
+    print("OLD OBSERVATION LIST:", obs_list)
     while total_steps < args.train_total_steps:
         # Train episode
 
@@ -126,19 +126,21 @@ def main():
                 action_list.append(agent.sample(obs))
             # action_list = [agent.sample(obs) for obs in obs_list]
             print("Action List Returned In Train:", action_list)
-            break
 
 
-        next_obs_list, reward_list, done_list, info_list = env_list.step(
+        next_obs_list, reward_list, done_list, info_list, next_obs_rgb_list = env_list.step(
             action_list)
-        '''
-        # Store data in replay memory
-        for i in range(env_num):
-            rpm.append(obs_list[i], action_list[i], reward_list[i],
-                       next_obs_list[i], done_list[i])
+
+        # # Store data in replay memory
+        # for i in range(env_num):
+        #     rpm.append(obs_list[i], action_list[i], reward_list[i],
+        #                next_obs_list[i], done_list[i])
 
         obs_list = env_list.get_obs()
         total_steps = env_list.total_steps
+        print("NEW OBS LIST:", obs_list)
+        break
+        '''
         #logger.info('----------- Step 1 ------------')
         # Train agent after collecting sufficient data
         if rpm.size() >= WARMUP_STEPS:
@@ -165,7 +167,7 @@ def main():
             logger.info(
                 'Total steps {}, Evaluation over {} episodes, Average reward: {}'
                 .format(total_steps, EVAL_EPISODES, avg_reward))
-    '''
+        '''
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(

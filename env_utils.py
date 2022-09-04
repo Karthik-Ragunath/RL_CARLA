@@ -59,6 +59,7 @@ class ParallelEnv(object):
         return self.obs_list
 
     def step(self, action_list):
+        '''
         return_list = [
             self.env_list[i].step(action_list[i]) for i in range(self.env_num)
         ]
@@ -70,6 +71,32 @@ class ParallelEnv(object):
         self.done_list = return_list[:, 2]
         self.info_list = return_list[:, 3]
         return self.next_obs_list, self.reward_list, self.done_list, self.info_list
+        '''
+        print("STEP FUNCTION CALLED NOW")
+        self.next_waypoint_obs_list = []
+        self.reward_list = []
+        self.done_list = []
+        self.info_list = []
+        self.next_obs_rgb_list = []
+        for action_index, action in enumerate(action_list):
+            print("ACTION TENSOR:", action)
+            return_tuple = self.env_list[action_index].step(action)
+            get_obs = return_tuple.get()
+            print("OBS STEP:", get_obs)
+            return_list, numpy_rgb_image, bounding_box_image = get_obs
+            print("WAYPOINT LIST:", return_list)
+            if numpy_rgb_image.any():
+                print("Image Does Exists")
+            self.next_waypoint_obs_list.append(return_list[0])
+            self.reward_list.append(return_list[1])
+            self.done_list.append(return_list[2])
+            self.info_list.append(return_list[3])
+            self.next_obs_rgb_list.append((numpy_rgb_image, bounding_box_image))
+        self.next_waypoint_obs_list = np.array(self.next_waypoint_obs_list, dtype=object)
+        self.reward_list = np.array(self.reward_list, dtype=object)
+        self.done_list = np.array(self.done_list, dtype=object)
+        self.info_list = np.array(self.info_list, dtype=object)
+        return self.next_waypoint_obs_list, self.reward_list, self.done_list, self.info_list, self.next_obs_rgb_list
 
     def get_obs(self):
         for i in range(self.env_num):
@@ -77,9 +104,12 @@ class ParallelEnv(object):
             self.episode_steps_list[i] += 1
             self.episode_reward_list[i] += self.reward_list[i]
 
-            self.obs_list[i] = self.next_obs_list[i]
+            # self.obs_list[i] = self.next_obs_list[i]
+            self.obs_list[i] = self.next_obs_rgb_list[i]
+            print("INSIDE GET OBS")
             if self.done_list[i] or self.episode_steps_list[
                     i] >= self._max_episode_steps:
+                print("EPISODE DONE IN TRAIN")
                 tensorboard.add_scalar('train/episode_reward_env{}'.format(i),
                                        self.episode_reward_list[i],
                                        self.total_steps)
@@ -91,6 +121,8 @@ class ParallelEnv(object):
                 obs_list_i = self.env_list[i].reset()
                 self.obs_list[i] = obs_list_i.get()
                 self.obs_list[i] = np.array(self.obs_list[i])
+            else:
+                print("EPISODE NOT DONE - CONTINUING")
         return self.obs_list
 
 
@@ -214,15 +246,18 @@ class CarlaRemoteEnv(object):
 
     def step(self, action):
         action_out, current_image = self.env.step(action)
+        bounded_image = None
+        numpy_rgb_image = None
+        print("STEP FUNCTION IN CARLA_ENV_REMOTE CLASS")
         if current_image:
-            # numpy_rgb_image = self.to_rgb_array(current_image)
+            numpy_rgb_image = self.to_rgb_array(current_image)
             # plt.imshow(numpy_rgb_image)
             # plt.savefig("carla_rgb_sensor_detected/" + str(current_image.frame) + '.png')
             # # print("$" * 25, "STEP Image Name:", str(current_image.frame), "$" * 25)
-            # # faster_rcnn_obj = DetectBoundingBox(numpy_rgb_image, str(current_image.frame) + '.png')
-            # # faster_rcnn_obj.detect_bounding_boxes()
+            faster_rcnn_obj = DetectBoundingBox(numpy_rgb_image, str(current_image.frame) + '.png')
+            bounded_image = faster_rcnn_obj.detect_bounding_boxes()
             print("Image Received In ParallelEnv Step")
         else:
             print("NO IMAGE DETECTED FOR NOW IN STEP")
         # return self.env.step(action)
-        return action_out, current_image
+        return action_out, numpy_rgb_image, bounded_image
