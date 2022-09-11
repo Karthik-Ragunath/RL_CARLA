@@ -120,8 +120,10 @@ class ParallelEnv(object):
                 self.episode_steps_list[i] = 0
                 self.episode_reward_list[i] = 0
                 obs_list_i = self.env_list[i].reset()
-                self.obs_list[i] = obs_list_i.get()
-                self.obs_list[i] = np.array(self.obs_list[i])
+                # self.obs_list[i] = obs_list_i.get()
+                get_obs = obs_list_i.get()
+                obs = (get_obs[1], get_obs[2])
+                self.obs_list[i] = np.array(obs)
             else:
                 print("EPISODE NOT DONE - CONTINUING")
         return self.obs_list

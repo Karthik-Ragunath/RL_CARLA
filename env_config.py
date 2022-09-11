@@ -81,5 +81,5 @@ EnvConfig = {
     'test_env_params': test_env_params,
 
     # training context
-    'train_context': "traffic"
+    'train_context': "train_loop_modified"
 }

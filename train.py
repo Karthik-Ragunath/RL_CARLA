@@ -153,13 +153,15 @@ def main():
             agent.learn(batch_obs, batch_action, batch_reward, batch_next_obs,
                         batch_terminal)
         print("-------------------------")
-        '''
+
         #logger.info('----------- Step 2 ------------')
         # Save agent
-        if total_steps > int(1e5) and total_steps > last_save_steps + int(1e4):
+        # if total_steps > int(1e5) and total_steps > last_save_steps + int(1e4):
+        if total_steps > int(1) and total_steps > last_save_steps + int(2):
             agent.save('./{model_framework}_model_{train_context}/step_{current_steps}_model.ckpt'.format(
                 model_framework=args.framework, current_steps=total_steps, train_context=EnvConfig['train_context']))
             last_save_steps = total_steps
+        '''
         #logger.info('----------- Step 3 ------------')
         # Evaluate episode
         if (total_steps + 1) // args.test_every_steps >= test_flag:
