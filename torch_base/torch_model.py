@@ -77,7 +77,9 @@ class Actor(parl.Model):
         x_cnn_orig = F.relu(self.cnn_layer_1_5(x_cnn_orig))
 
         x_cnn_orig = self.max_pool_layer_1(x_cnn_orig)
-        x_cnn_orig = torch.unsqueeze(torch.flatten(x_cnn_orig), dim=0)
+        # x_cnn_orig = torch.unsqueeze(torch.flatten(x_cnn_orig), dim=0)
+        x_cnn_orig = torch.flatten(x_cnn_orig, start_dim=1)
+        print("ACTOR - FORWARD SHAPE:", x_cnn_orig.size())
 
         x_cnn_orig = F.relu(self.fully_connected_layer_1_1(x_cnn_orig))
         x_cnn_orig = F.relu(self.fully_connected_layer_1_2(x_cnn_orig))
@@ -93,7 +95,8 @@ class Actor(parl.Model):
         x_faster_rcnn = F.relu(self.cnn_layer_2_5(x_faster_rcnn))
 
         x_faster_rcnn = self.max_pool_layer_2(x_faster_rcnn)
-        x_faster_rcnn = torch.unsqueeze(torch.flatten(x_faster_rcnn), dim=0)
+        # x_faster_rcnn = torch.unsqueeze(torch.flatten(x_faster_rcnn), dim=0)
+        x_faster_rcnn = torch.flatten(x_faster_rcnn, start_dim=1)
 
         x_faster_rcnn = F.relu(self.fully_connected_layer_2_1(x_faster_rcnn))
         x_faster_rcnn = F.relu(self.fully_connected_layer_2_2(x_faster_rcnn))
@@ -176,7 +179,8 @@ class Critic(parl.Model):
         x_cnn_orig = F.relu(self.cnn_layer_1_5(x_cnn_orig))
 
         x_cnn_orig = self.max_pool_layer_1(x_cnn_orig)
-        x_cnn_orig = torch.unsqueeze(torch.flatten(x_cnn_orig), dim=0)
+        # x_cnn_orig = torch.unsqueeze(torch.flatten(x_cnn_orig), dim=0)
+        x_cnn_orig = torch.flatten(x_cnn_orig, start_dim=1)
         x_cnn_orig = F.relu(self.fully_connected_layer_1_1(x_cnn_orig))
 
         # Bounding Box Image - CNN
@@ -187,7 +191,8 @@ class Critic(parl.Model):
         x_faster_rcnn = F.relu(self.cnn_layer_2_5(x_faster_rcnn))
 
         x_faster_rcnn = self.max_pool_layer_2(x_faster_rcnn)
-        x_faster_rcnn = torch.unsqueeze(torch.flatten(x_faster_rcnn), dim=0)
+        # x_faster_rcnn = torch.unsqueeze(torch.flatten(x_faster_rcnn), dim=0)
+        x_faster_rcnn = torch.flatten(x_faster_rcnn, start_dim=1)
         x_faster_rcnn = F.relu(self.fully_connected_layer_2_1(x_faster_rcnn))
 
         fusion = torch.cat((x_cnn_orig, x_faster_rcnn), 1)

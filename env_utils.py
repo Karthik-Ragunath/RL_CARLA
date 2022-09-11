@@ -82,9 +82,7 @@ class ParallelEnv(object):
             print("ACTION TENSOR:", action)
             return_tuple = self.env_list[action_index].step(action)
             get_obs = return_tuple.get()
-            print("OBS STEP:", get_obs)
             return_list, numpy_rgb_image, bounding_box_image = get_obs
-            print("WAYPOINT LIST:", return_list)
             if numpy_rgb_image.any():
                 print("Image Does Exists")
             self.next_waypoint_obs_list.append(return_list[0])
@@ -96,7 +94,9 @@ class ParallelEnv(object):
         self.reward_list = np.array(self.reward_list, dtype=object)
         self.done_list = np.array(self.done_list, dtype=object)
         self.info_list = np.array(self.info_list, dtype=object)
+        print("NEXT OBS SHAPE OLD:", self.next_obs_rgb_list[0][0].shape)
         self.next_obs_rgb_list = np.array(self.next_obs_rgb_list, dtype=object)
+        print("NEXT OBS SHAPE:", self.next_obs_rgb_list.shape)
         return self.next_waypoint_obs_list, self.reward_list, self.done_list, self.info_list, self.next_obs_rgb_list
 
     def get_obs(self):

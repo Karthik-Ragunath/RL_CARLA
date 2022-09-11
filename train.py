@@ -11,7 +11,8 @@ from torch_base import DetectBoundingBox
 WARMUP_STEPS = 2e3
 EVAL_EPISODES = 3
 # MEMORY_SIZE = int(1e4)
-BATCH_SIZE = 256
+# BATCH_SIZE = 256
+BATCH_SIZE = 5
 MEMORY_SIZE = 10
 GAMMA = 0.99
 TAU = 0.005
@@ -139,7 +140,7 @@ def main():
 
         obs_list = env_list.get_obs()
         total_steps = env_list.total_steps
-        print("NEW OBS LIST:", obs_list)
+        # print("NEW OBS LIST:", obs_list)
         # break
 
         #logger.info('----------- Step 1 ------------')
@@ -148,10 +149,10 @@ def main():
         if 5 > 2:
             batch_obs, batch_action, batch_reward, batch_next_obs, batch_terminal = rpm.sample_batch(
                 BATCH_SIZE)
+            print("BATCH SAMPLED")
             agent.learn(batch_obs, batch_action, batch_reward, batch_next_obs,
                         batch_terminal)
         break
-
         '''
         #logger.info('----------- Step 2 ------------')
         # Save agent

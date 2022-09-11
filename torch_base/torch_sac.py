@@ -88,13 +88,24 @@ class TorchSAC(parl.Algorithm):
 
     def _critic_learn(self, obs, action, reward, next_obs, terminal):
         with torch.no_grad():
-            next_action, next_log_pro = self.sample(next_obs)
+            next_rgb_image = next_obs[:, 0, :, :, :]
+            next_bounded_rgb_image = next_obs[:, 1, :, :, :]
+            next_rgb_image = next_rgb_image.float().permute(0, 3, 1, 2)
+            next_bounded_rgb_image = next_bounded_rgb_image.float().permute(0, 3, 1, 2)
+            print("Tensor Sizes:", next_rgb_image.size(), next_bounded_rgb_image.size())
+            next_action, next_log_pro = self.sample(next_rgb_image, next_bounded_rgb_image)
+            # q1_next, q2_next = self.target_model.critic_model(
+            #     next_obs, next_action)
             q1_next, q2_next = self.target_model.critic_model(
-                next_obs, next_action)
+                next_rgb_image, next_bounded_rgb_image, next_action)
             target_Q = torch.min(q1_next, q2_next) - self.alpha * next_log_pro
             target_Q = reward + self.gamma * (1. - terminal) * target_Q
-        cur_q1, cur_q2 = self.model.critic_model(obs, action)
-
+        rgb_image = obs[:, 0, :, :, :]
+        bounded_rgb_image = obs[:, 1, :, :, :]
+        rgb_image = rgb_image.float().permute(0, 3, 1, 2)
+        bounded_rgb_image = bounded_rgb_image.float().permute(0, 3, 1, 2)
+        # cur_q1, cur_q2 = self.model.critic_model(obs, action)
+        cur_q1, cur_q2 = self.model.critic_model(rgb_image, bounded_rgb_image, action)
         critic_loss = F.mse_loss(cur_q1, target_Q) + F.mse_loss(
             cur_q2, target_Q)
 
@@ -104,8 +115,14 @@ class TorchSAC(parl.Algorithm):
         return critic_loss
 
     def _actor_learn(self, obs):
-        act, log_pi = self.sample(obs)
-        q1_pi, q2_pi = self.model.critic_model(obs, act)
+        rgb_image = obs[:, 0, :, :, :]
+        bounded_rgb_image = obs[:, 1, :, :, :]
+        rgb_image = rgb_image.float().permute(0, 3, 1, 2)
+        bounded_rgb_image = bounded_rgb_image.float().permute(0, 3, 1, 2)
+        # act, log_pi = self.sample(obs)
+        # q1_pi, q2_pi = self.model.critic_model(obs, act)
+        act, log_pi = self.sample(rgb_image, bounded_rgb_image)
+        q1_pi, q2_pi = self.model.critic_model(rgb_image, bounded_rgb_image, act)
         min_q_pi = torch.min(q1_pi, q2_pi)
         actor_loss = ((self.alpha * log_pi) - min_q_pi).mean()
 
