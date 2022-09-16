@@ -200,6 +200,26 @@ class CarlaEnv(gym.Env):
                     data.save_to_disk('/media/karthikragunath/Personal-Data/carla_6/RL_CARLA/image_outputs/%.6d.jpg' % data.frame)
                     self.current_image = data
 
+                '''
+                measurements, sensor_data = self.client.read_data()
+                intersection_otherlane = measurements.player_measurements.intersection_otherlane
+                intersection_offroad = measurements.player_measurements.intersection_offroad
+                print("*"*30, "Intersection Other Lane:", intersection_otherlane, "Intersection Offroad:", intersection_offroad, "*"*30)
+                '''
+
+                current_location = self.ego.get_location()
+                print("^" * 30, "Current Location:", current_location, "^" * 30)
+                waypoint_info = self.map.get_waypoint(location=self.ego.get_location(), project_to_road=True)
+                print("#" * 30, 'waypoint info:', waypoint_info, "#" * 30)
+                waypoint_info_lane = self.map.get_waypoint(location=self.ego.get_location(), project_to_road=True, lane_type=carla.LaneType.Any)
+                print('@' * 30, 'Waypoint Lane Info:', waypoint_info_lane, '@' * 30)
+                ego_location = self.ego.get_transform().location
+                print("Ego Transformed Location:", ego_location)
+                bounding_box = self.ego.bounding_box
+                print("Bounding Box:", bounding_box)
+                bounding_box_transform = self.ego.bounding_box.transform
+                print("Bounding Box Transform:", bounding_box_transform)
+
                 time.sleep(3)
                 self.collision_hist = []
 
