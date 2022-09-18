@@ -8,23 +8,38 @@ __all__ = ['TorchAgent']
 class TorchAgent(parl.Agent):
     def __init__(self, algorithm):
         super(TorchAgent, self).__init__(algorithm)
-        print("TorchAgent Called")
+        # print("TorchAgent Called")
         # self.device = torch.device("cuda" if torch.cuda.
         #                            is_available() else "cpu")
-        print("E"*50)
+        # print("E"*50)
         self.device = "cpu"
-        print("F")
+        # print("F")
         self.alg.sync_target(decay=0)
+    #
+    # def predict(self, obs):
+    #     obs = torch.FloatTensor(obs.reshape(1, -1)).to(self.device)
+    #     action = self.alg.predict(obs)
+    #     action_numpy = action.cpu().detach().numpy().flatten()
+    #     return action_numpy
 
-    def predict(self, obs):
-        obs = torch.FloatTensor(obs.reshape(1, -1)).to(self.device)
-        action = self.alg.predict(obs)
+    def predict(self, original_image, bounding_box_image):
+        # obs = torch.FloatTensor(obs.reshape(1, -1)).to(self.device)
+        action = self.alg.predict(original_image, bounding_box_image)
         action_numpy = action.cpu().detach().numpy().flatten()
         return action_numpy
 
     def sample(self, obs):
-        obs = torch.FloatTensor(obs.reshape(1, -1)).to(self.device)
-        action, _ = self.alg.sample(obs)
+        print("Train Observation:", obs)
+        normal_image_obs, bounding_box_image_obs = obs
+        # normal_image_obs = torch.FloatTensor(normal_image_obs.reshape(1, -1)).to(self.device)
+        # bounding_box_image_obs = torch.FloatTensor(bounding_box_image_obs.reshape(1, -1)).to(self.device)
+        # obs = torch.FloatTensor(obs.reshape(1, -1)).to(self.device)
+        # action, _ = self.alg.sample(obs)
+        normal_image_obs = torch.unsqueeze(torch.from_numpy(normal_image_obs).float(), dim=0).permute(0, 3, 1, 2)
+        bounding_box_image_obs = torch.unsqueeze(torch.from_numpy(bounding_box_image_obs).float(), dim=0).permute(0, 3, 1, 2)
+        print("Normal Image Dim:", bounding_box_image_obs.size())
+        print("Bounding Box Image Dim:", bounding_box_image_obs.size())
+        action, _ = self.alg.sample(normal_image_obs, bounding_box_image_obs)
         action_numpy = action.cpu().detach().numpy().flatten()
         return action_numpy
 

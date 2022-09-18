@@ -13,6 +13,8 @@ params = {
     'dt': 0.025,
     # filter for defining ego vehicle
     'ego_vehicle_filter': 'vehicle.lincoln*',
+    # filter for defining traffic vehicles
+    'traffic_vehicle_filter': 'vehicle.bmw.*',
     # CARLA service's port
     'port': 2000,
     # mode of the task, [random, roundabout (only for Town03)]
@@ -25,6 +27,8 @@ params = {
     'desired_speed': 15,
     # maximum times to spawn ego vehicle
     'max_ego_spawn_times': 100,
+    # maximum number of traffic vehicles
+    'max_traffic_vehicles': 1
 }
 
 # train env params
@@ -39,7 +43,8 @@ e.g.2
     set five ports --> parallel training with five envs
     train_env_ports = [2017, 2019, 2021, 2023, 2025]
 """
-train_env_ports = [2021, 2023, 2025]
+# train_env_ports = [2021, 2023, 2025]
+train_env_ports = [2021]
 train_code_mode = 'train'
 train_envs_params = []
 for port in train_env_ports:
@@ -74,4 +79,7 @@ EnvConfig = {
 
     # env config for evaluate.py
     'test_env_params': test_env_params,
+
+    # training context
+    'train_context': "train_loop_modified"
 }

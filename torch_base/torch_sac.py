@@ -29,21 +29,20 @@ class TorchSAC(parl.Algorithm):
                 actor_lr (float): learning rate of the actor model
                 critic_lr (float): learning rate of the critic model
         """
-        print("TorchSAC called")
+        # print("TorchSAC called")
         assert isinstance(gamma, float)
         assert isinstance(tau, float)
         assert isinstance(alpha, float)
         assert isinstance(actor_lr, float)
         assert isinstance(critic_lr, float)
-        print("A" * 50)
+        # print("A" * 50)
         self.gamma = gamma
         self.tau = tau
         self.alpha = alpha
         self.actor_lr = actor_lr
         self.critic_lr = critic_lr
-        print("B"*50)
         self.model = model.to(device)
-        print("D"*50)
+        # print("D"*50)
         self.target_model = deepcopy(self.model)
         # self.actor_optimizer = torch.optim.Adam(
         #     self.model.get_actor_params(), lr=actor_lr)
@@ -51,16 +50,23 @@ class TorchSAC(parl.Algorithm):
             self.model.actor_model.parameters(), lr=actor_lr)
         self.critic_optimizer = torch.optim.Adam(
             self.model.critic_model.parameters(), lr=critic_lr)
-        print("C" * 50)
+        # print("C" * 50)
 
-    def predict(self, obs):
-        act_mean, _ = self.model.policy(obs)
+    # def predict(self, obs):
+    #     act_mean, _ = self.model.policy(obs)
+    #     # print("Predicted Mean Action:", act_mean)
+    #     action = torch.tanh(act_mean)
+    #     return action
+
+    def predict(self, original_image, bounding_box_image):
+        act_mean, _ = self.model.policy(original_image, bounding_box_image)
         # print("Predicted Mean Action:", act_mean)
         action = torch.tanh(act_mean)
         return action
 
-    def sample(self, obs):
-        act_mean, act_log_std = self.model.policy(obs)
+    def sample(self, normal_image_obs, bounded_image_obs):
+        act_mean, act_log_std = self.model.policy(normal_image_obs, bounded_image_obs)
+        print("ACTOR MEAN:", act_mean, "ACTOR_LOG_STD:", act_log_std)
         normal = Normal(act_mean, act_log_std.exp())
         # for reparameterization trick  (mean + std*N(0,1))
         x_t = normal.rsample()
@@ -82,13 +88,24 @@ class TorchSAC(parl.Algorithm):
 
     def _critic_learn(self, obs, action, reward, next_obs, terminal):
         with torch.no_grad():
-            next_action, next_log_pro = self.sample(next_obs)
+            next_rgb_image = next_obs[:, 0, :, :, :]
+            next_bounded_rgb_image = next_obs[:, 1, :, :, :]
+            next_rgb_image = next_rgb_image.float().permute(0, 3, 1, 2)
+            next_bounded_rgb_image = next_bounded_rgb_image.float().permute(0, 3, 1, 2)
+            print("Tensor Sizes:", next_rgb_image.size(), next_bounded_rgb_image.size())
+            next_action, next_log_pro = self.sample(next_rgb_image, next_bounded_rgb_image)
+            # q1_next, q2_next = self.target_model.critic_model(
+            #     next_obs, next_action)
             q1_next, q2_next = self.target_model.critic_model(
-                next_obs, next_action)
+                next_rgb_image, next_bounded_rgb_image, next_action)
             target_Q = torch.min(q1_next, q2_next) - self.alpha * next_log_pro
             target_Q = reward + self.gamma * (1. - terminal) * target_Q
-        cur_q1, cur_q2 = self.model.critic_model(obs, action)
-
+        rgb_image = obs[:, 0, :, :, :]
+        bounded_rgb_image = obs[:, 1, :, :, :]
+        rgb_image = rgb_image.float().permute(0, 3, 1, 2)
+        bounded_rgb_image = bounded_rgb_image.float().permute(0, 3, 1, 2)
+        # cur_q1, cur_q2 = self.model.critic_model(obs, action)
+        cur_q1, cur_q2 = self.model.critic_model(rgb_image, bounded_rgb_image, action)
         critic_loss = F.mse_loss(cur_q1, target_Q) + F.mse_loss(
             cur_q2, target_Q)
 
@@ -98,8 +115,14 @@ class TorchSAC(parl.Algorithm):
         return critic_loss
 
     def _actor_learn(self, obs):
-        act, log_pi = self.sample(obs)
-        q1_pi, q2_pi = self.model.critic_model(obs, act)
+        rgb_image = obs[:, 0, :, :, :]
+        bounded_rgb_image = obs[:, 1, :, :, :]
+        rgb_image = rgb_image.float().permute(0, 3, 1, 2)
+        bounded_rgb_image = bounded_rgb_image.float().permute(0, 3, 1, 2)
+        # act, log_pi = self.sample(obs)
+        # q1_pi, q2_pi = self.model.critic_model(obs, act)
+        act, log_pi = self.sample(rgb_image, bounded_rgb_image)
+        q1_pi, q2_pi = self.model.critic_model(rgb_image, bounded_rgb_image, act)
         min_q_pi = torch.min(q1_pi, q2_pi)
         actor_loss = ((self.alpha * log_pi) - min_q_pi).mean()
 
